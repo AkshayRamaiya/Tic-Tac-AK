@@ -9,25 +9,34 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { LogoText } from "@/components/icons/logo";
-import { Gamepad2, Mail, Lock } from 'lucide-react';
+import { UserPlus, Mail, Lock, CheckSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setError(''); // Clear previous errors
+
+    if (password !== confirmPassword) {
+      setError("Passwords don't match!");
+      return;
+    }
+    
     setIsLoading(true);
-    console.log("Login attempt with:", { email, password });
+    console.log("Signup attempt with:", { email, password });
     // Simulate API call / authentication
     await new Promise(resolve => setTimeout(resolve, 1500));
     setIsLoading(false);
-    // After successful login, you might navigate the user:
+    // After successful signup, you might navigate the user:
     // router.push('/'); 
-    alert("Login functionality is a placeholder. Check console for submitted data. In a real app, you would handle Firebase Authentication here.");
+    alert("Signup functionality is a placeholder. Check console for submitted data. In a real app, you would handle Firebase Authentication here.");
   };
 
   return (
@@ -35,13 +44,13 @@ export default function LoginPage() {
       <Card className="w-full max-w-md shadow-2xl rounded-xl overflow-hidden animate-scale-in">
         <CardHeader className="items-center text-center p-6 bg-card/80 backdrop-blur-sm border-b border-border">
           <LogoText className="mb-2 animate-subtle-pulse [animation-delay:0.5s]" />
-          <CardTitle className="text-2xl font-bold text-primary">Welcome Back, Player!</CardTitle>
+          <CardTitle className="text-2xl font-bold text-primary">Join the Duel!</CardTitle>
           <CardDescription className="text-muted-foreground pt-1">
-            Enter your credentials to join the duel.
+            Create your account to start playing.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6 md:p-8 space-y-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-foreground/90 flex items-center">
                 <Mail className="mr-2 h-4 w-4 text-primary" /> Email Address
@@ -72,14 +81,28 @@ export default function LoginPage() {
                 disabled={isLoading}
               />
             </div>
-            <div className="text-right -mt-2">
-              <Link href="#" className="text-sm text-primary hover:underline hover:text-primary/80 transition-colors">
-                Forgot Password?
-              </Link>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword" className="text-foreground/90 flex items-center">
+                <CheckSquare className="mr-2 h-4 w-4 text-primary" /> Confirm Password
+              </Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                className={cn(
+                  "bg-input/70 border-border focus:bg-input placeholder:text-muted-foreground/70",
+                  error && "border-destructive focus:border-destructive"
+                )}
+                disabled={isLoading}
+              />
             </div>
+            {error && <p className="text-sm text-destructive text-center">{error}</p>}
             <Button 
               type="submit" 
-              className="w-full transform transition-transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-primary/30 text-base py-6"
+              className="w-full transform transition-transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-primary/30 text-base py-6 mt-6"
               disabled={isLoading}
               size="lg"
             >
@@ -89,21 +112,21 @@ export default function LoginPage() {
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               ) : (
-                <Gamepad2 className="mr-2 h-5 w-5" />
+                <UserPlus className="mr-2 h-5 w-5" />
               )}
-              {isLoading ? 'Logging In...' : 'Enter the Arena'}
+              {isLoading ? 'Creating Account...' : 'Create Account & Play'}
             </Button>
           </form>
           <p className="text-center text-sm text-muted-foreground pt-4">
-            New challenger?{' '}
-            <Link href="/signup" className="font-semibold text-primary hover:underline hover:text-primary/80 transition-colors">
-              Create an Account
+            Already a duelist?{' '}
+            <Link href="/login" className="font-semibold text-primary hover:underline hover:text-primary/80 transition-colors">
+              Login Here
             </Link>
           </p>
         </CardContent>
       </Card>
        <footer className="fixed bottom-4 text-sm text-muted-foreground/80">
-        Tic-Tac-Toe Duel: Secure Login.
+        Tic-Tac-Toe Duel: New Player Registration.
       </footer>
     </div>
   );
