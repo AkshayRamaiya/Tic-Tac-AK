@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
@@ -10,7 +11,7 @@ import { GameControls } from '@/components/game/game-controls';
 import { InvitationModal } from '@/components/game/invitation-modal';
 import { LogoText } from '@/components/icons/logo';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Confetti } from 'lucide-react'; // Placeholder for potential win animation enhancement
+import { PartyPopper } from 'lucide-react'; // Replaced Confetti with PartyPopper
 
 export default function GamePage() {
   const params = useParams();
@@ -110,7 +111,7 @@ export default function GamePage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
           {/* Basic confetti-like effect for winners */}
           {[...Array(30)].map((_, i) => (
-            <Confetti
+            <PartyPopper
               key={i}
               className="absolute animate-ping text-primary opacity-0"
               style={{
