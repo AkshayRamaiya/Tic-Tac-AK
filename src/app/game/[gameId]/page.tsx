@@ -28,7 +28,6 @@ export default function GamePage() {
   const [winner, setWinner] = useState<Player | null>(null);
 
   useEffect(() => {
-    // This effect runs only on the client after mount
     setInviteLink(window.location.href);
   }, []);
 
@@ -38,7 +37,6 @@ export default function GamePage() {
       setIsWinnerModalOpen(true);
     } else {
       setIsWinnerModalOpen(false);
-      // setWinner(null); // Not strictly necessary to nullify here if dialog handles it
     }
   }, [gameResult]);
 
@@ -69,9 +67,7 @@ export default function GamePage() {
     setCurrentPlayer('X');
     setGameResult('playing');
     setWinningLine(null);
-    setIsWinnerModalOpen(false); // Close winner dialog on restart
-    // In a real-time app, signal backend to restart game:
-    // restartGameOnBackend(gameId);
+    setIsWinnerModalOpen(false);
   }, []);
 
   const handleOpenInviteModal = () => {
@@ -106,20 +102,22 @@ export default function GamePage() {
       </Card>
 
       {isGameOver && winner && (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-          {[...Array(30)].map((_, i) => (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none w-0 h-0">
+          {[...Array(40)].map((_, i) => (
             <PartyPopper
               key={i}
-              className="absolute animate-ping text-primary opacity-0"
+              className="absolute animate-particle-burst"
               style={{
-                left: `${Math.random() * 300 - 150}px`,
-                top: `${Math.random() * 300 - 150}px`,
-                animationDelay: `${Math.random() * 1}s`,
-                animationDuration: `${0.5 + Math.random() * 0.5}s`,
-                width: `${10 + Math.random() * 10}px`,
-                height: `${10 + Math.random() * 10}px`,
+                '--tx': `${(Math.random() - 0.5) * 400}px`,
+                '--ty': `${(Math.random() - 0.5) * 400}px`,
+                '--s': `${0.7 + Math.random() * 0.8}`,
+                '--r': `${(Math.random() - 0.5) * 720}deg`,
+                animationDelay: `${Math.random() * 0.3}s`,
+                animationDuration: `${0.6 + Math.random() * 0.6}s`,
+                width: `${12 + Math.random() * 12}px`,
+                height: `${12 + Math.random() * 12}px`,
                 color: winner === 'X' ? 'hsl(var(--primary))' : 'hsl(var(--accent))',
-              }}
+              } as React.CSSProperties}
             />
           ))}
         </div>
