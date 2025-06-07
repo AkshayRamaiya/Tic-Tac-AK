@@ -9,9 +9,10 @@ import { GameBoard } from '@/components/game/game-board';
 import { GameStatus } from '@/components/game/game-status';
 import { GameControls } from '@/components/game/game-controls';
 import { InvitationModal } from '@/components/game/invitation-modal';
+import { WinnerDialog } from '@/components/game/winner-dialog';
 import { LogoText } from '@/components/icons/logo';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { PartyPopper } from 'lucide-react'; // Replaced Confetti with PartyPopper
+import { PartyPopper } from 'lucide-react';
 
 export default function GamePage() {
   const params = useParams();
@@ -23,25 +24,24 @@ export default function GamePage() {
   const [winningLine, setWinningLine] = useState<WinningLine>(null);
   const [isInvitationModalOpen, setIsInvitationModalOpen] = useState(false);
   const [inviteLink, setInviteLink] = useState('');
+  const [isWinnerModalOpen, setIsWinnerModalOpen] = useState(false);
+  const [winner, setWinner] = useState<Player | null>(null);
 
   useEffect(() => {
     // This effect runs only on the client after mount
     setInviteLink(window.location.href);
   }, []);
 
-  // In a real-time app, you would fetch game state based on gameId here
-  // and listen for updates from a backend (e.g., Firebase, WebSockets)
-  // useEffect(() => {
-  //   if (gameId) {
-  //     // const unsubscribe = setupRealtimeListener(gameId, (newGameState) => {
-  //     //   setBoard(newGameState.board);
-  //     //   setCurrentPlayer(newGameState.currentPlayer);
-  //     //   setGameResult(newGameState.gameResult);
-  //     //   setWinningLine(newGameState.winningLine);
-  //     // });
-  //     // return () => unsubscribe();
-  //   }
-  // }, [gameId]);
+  useEffect(() => {
+    if (gameResult === 'X' || gameResult === 'O') {
+      setWinner(gameResult);
+      setIsWinnerModalOpen(true);
+    } else {
+      setIsWinnerModalOpen(false);
+      // setWinner(null); // Not strictly necessary to nullify here if dialog handles it
+    }
+  }, [gameResult]);
+
 
   const handleCellClick = useCallback((index: number) => {
     if (gameResult !== 'playing' || board[index]) {
@@ -51,9 +51,6 @@ export default function GamePage() {
     const newBoard = [...board];
     newBoard[index] = currentPlayer;
     setBoard(newBoard);
-
-    // In a real-time app, this move would be sent to the backend here:
-    // sendMoveToBackend(gameId, index, currentPlayer);
 
     const { winner: newWinner, line: newLine } = calculateWinner(newBoard);
 
@@ -65,16 +62,17 @@ export default function GamePage() {
     } else {
       setCurrentPlayer(prevPlayer => (prevPlayer === 'X' ? 'O' : 'X'));
     }
-  }, [board, currentPlayer, gameResult, gameId]);
+  }, [board, currentPlayer, gameResult]);
 
   const handleRestartGame = useCallback(() => {
     setBoard(createInitialBoard());
     setCurrentPlayer('X');
     setGameResult('playing');
     setWinningLine(null);
+    setIsWinnerModalOpen(false); // Close winner dialog on restart
     // In a real-time app, signal backend to restart game:
     // restartGameOnBackend(gameId);
-  }, [gameId]);
+  }, []);
 
   const handleOpenInviteModal = () => {
     setIsInvitationModalOpen(true);
@@ -107,9 +105,8 @@ export default function GamePage() {
         </CardContent>
       </Card>
 
-      {isGameOver && gameResult !== 'draw' && (
+      {isGameOver && winner && (
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-          {/* Basic confetti-like effect for winners */}
           {[...Array(30)].map((_, i) => (
             <PartyPopper
               key={i}
@@ -121,7 +118,7 @@ export default function GamePage() {
                 animationDuration: `${0.5 + Math.random() * 0.5}s`,
                 width: `${10 + Math.random() * 10}px`,
                 height: `${10 + Math.random() * 10}px`,
-                color: gameResult === 'X' ? 'hsl(var(--primary))' : 'hsl(var(--accent))',
+                color: winner === 'X' ? 'hsl(var(--primary))' : 'hsl(var(--accent))',
               }}
             />
           ))}
@@ -133,6 +130,14 @@ export default function GamePage() {
         onOpenChange={setIsInvitationModalOpen}
         gameLink={inviteLink}
       />
+
+      <WinnerDialog
+        isOpen={isWinnerModalOpen}
+        onOpenChange={setIsWinnerModalOpen}
+        winner={winner}
+        onRestart={handleRestartGame}
+      />
+      
       <footer className="fixed bottom-4 text-sm text-muted-foreground/80">
         Game ID: {gameId}
       </footer>
