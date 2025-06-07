@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import { LogoText } from "@/components/icons/logo";
 import { UserPlus, Mail, Lock, CheckSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+const AUTH_KEY = 'tic-tac-toe-duel-isLoggedIn';
+
 export default function SignupPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -20,9 +22,16 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    // If already logged in, redirect away from signup page
+    if (localStorage.getItem(AUTH_KEY) === 'true') {
+      router.replace('/');
+    }
+  }, [router]);
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setError(''); // Clear previous errors
+    setError(''); 
 
     if (password !== confirmPassword) {
       setError("Passwords don't match!");
@@ -31,12 +40,16 @@ export default function SignupPage() {
     
     setIsLoading(true);
     console.log("Signup attempt with:", { email, password });
+    
     // Simulate API call / authentication
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // In a real app, handle Firebase Authentication here.
+    // For now, we'll just simulate success.
+    localStorage.setItem(AUTH_KEY, 'true');
     setIsLoading(false);
-    // After successful signup, you might navigate the user:
-    // router.push('/'); 
-    alert("Signup functionality is a placeholder. Check console for submitted data. In a real app, you would handle Firebase Authentication here.");
+    
+    router.push('/'); // Redirect to homepage after signup
   };
 
   return (

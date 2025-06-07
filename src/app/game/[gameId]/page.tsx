@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import type { BoardState, Player, GameStatus as GameResultType, WinningLine } from '@/types';
 import { calculateWinner, isBoardFull, createInitialBoard } from '@/lib/game-logic';
 import { GameBoard } from '@/components/game/game-board';
@@ -14,13 +14,17 @@ import { LogoText } from '@/components/icons/logo';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { PartyPopper } from 'lucide-react';
 
+const AUTH_KEY = 'tic-tac-toe-duel-isLoggedIn';
+
 export default function GamePage() {
   const params = useParams();
+  const router = useRouter();
   const gameId = params.gameId as string;
 
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [board, setBoard] = useState<BoardState>(createInitialBoard());
   const [currentPlayer, setCurrentPlayer] = useState<Player>('X');
-  const [gameResult, setGameResult] = useState<GameResultType | null>('playing'); // 'playing', 'draw', 'X', 'O'
+  const [gameResult, setGameResult] = useState<GameResultType | null>('playing'); 
   const [winningLine, setWinningLine] = useState<WinningLine>(null);
   const [isInvitationModalOpen, setIsInvitationModalOpen] = useState(false);
   const [inviteLink, setInviteLink] = useState('');
@@ -28,8 +32,17 @@ export default function GamePage() {
   const [winner, setWinner] = useState<Player | null>(null);
 
   useEffect(() => {
-    setInviteLink(window.location.href);
-  }, []);
+    // Check authentication status
+    const loggedIn = localStorage.getItem(AUTH_KEY) === 'true';
+    setIsAuthenticated(loggedIn);
+
+    if (!loggedIn) {
+      router.replace(`/login?redirect=/game/${gameId}`);
+    } else {
+      // Only set invite link if authenticated and on client
+      setInviteLink(window.location.href);
+    }
+  }, [router, gameId]);
 
   useEffect(() => {
     if (gameResult === 'X' || gameResult === 'O') {
@@ -42,7 +55,7 @@ export default function GamePage() {
 
 
   const handleCellClick = useCallback((index: number) => {
-    if (gameResult !== 'playing' || board[index]) {
+    if (gameResult !== 'playing' || board[index] || !isAuthenticated) {
       return;
     }
 
@@ -60,21 +73,41 @@ export default function GamePage() {
     } else {
       setCurrentPlayer(prevPlayer => (prevPlayer === 'X' ? 'O' : 'X'));
     }
-  }, [board, currentPlayer, gameResult]);
+  }, [board, currentPlayer, gameResult, isAuthenticated]);
 
   const handleRestartGame = useCallback(() => {
+    if (!isAuthenticated) return;
     setBoard(createInitialBoard());
     setCurrentPlayer('X');
     setGameResult('playing');
     setWinningLine(null);
     setIsWinnerModalOpen(false);
-  }, []);
+  }, [isAuthenticated]);
 
   const handleOpenInviteModal = () => {
+    if (!isAuthenticated) return;
     setIsInvitationModalOpen(true);
   };
   
   const isGameOver = gameResult !== 'playing';
+
+  if (isAuthenticated === null) {
+    // Still checking auth, show loading or null
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-background to-secondary p-4">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    // Should have been redirected, but as a fallback:
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-background to-secondary p-4">
+        <p>Redirecting to login...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-background to-secondary p-4 selection:bg-primary/20 selection:text-primary-foreground">

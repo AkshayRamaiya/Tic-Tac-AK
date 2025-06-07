@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState, type FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, type FormEvent, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,22 +12,46 @@ import { LogoText } from "@/components/icons/logo";
 import { Gamepad2, Mail, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+const AUTH_KEY = 'tic-tac-toe-duel-isLoggedIn';
+
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [redirectPath, setRedirectPath] = useState<string | null>(null);
+
+  useEffect(() => {
+    const redirect = searchParams.get('redirect');
+    if (redirect) {
+      setRedirectPath(redirect);
+    }
+    // If already logged in, redirect away from login page
+    if (localStorage.getItem(AUTH_KEY) === 'true') {
+      router.replace(redirect || '/');
+    }
+  }, [searchParams, router]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
     console.log("Login attempt with:", { email, password });
+    
     // Simulate API call / authentication
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // In a real app, handle Firebase Authentication here.
+    // For now, we'll just simulate success.
+    localStorage.setItem(AUTH_KEY, 'true');
     setIsLoading(false);
-    // After successful login, you might navigate the user:
-    // router.push('/'); 
-    alert("Login functionality is a placeholder. Check console for submitted data. In a real app, you would handle Firebase Authentication here.");
+
+    // Redirect after login
+    if (redirectPath) {
+      router.push(redirectPath);
+    } else {
+      router.push('/'); // Default redirect to homepage
+    }
   };
 
   return (
