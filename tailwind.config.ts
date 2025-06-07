@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -89,7 +90,7 @@ export default {
           },
         },
         'scale-in': {
-          '0%': { transform: 'scale(0.5)', opacity: '0' },
+          '0%': { transform: 'scale(0.95)', opacity: '0' },
           '100%': { transform: 'scale(1)', opacity: '1' },
         },
         'particle-burst': {
@@ -99,12 +100,17 @@ export default {
             transform: 'translate(var(--tx, 0px), var(--ty, 0px)) scale(var(--s, 1)) rotate(var(--r, 0deg))' 
           },
         },
+        'subtle-pulse': {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.85', transform: 'scale(1.03)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'scale-in': 'scale-in 0.2s ease-out forwards',
+        'scale-in': 'scale-in 0.3s ease-out forwards',
         'particle-burst': 'particle-burst 1s ease-out forwards',
+        'subtle-pulse': 'subtle-pulse 2.5s ease-in-out infinite',
       },
     },
   },
